@@ -458,65 +458,90 @@ function iniciarDownload() {
     btn.style.opacity = "0.8";
     velocidadeParticulas = 0.5;
 
+    console.log("Iniciando download para URL:", urlInput);
+
     fetch("https://clipgrabber-api.onrender.com/download", {
-    fetch("https://clipgrabber-api.onrender.com/download", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ url: urlInput })
-})
-.then(async r => {
-    if (!r.ok) {
-        const err = await r.json().catch(() => null);
-        throw new Error(err?.error || "Erro ao baixar vídeo");
-    }
-    return r.blob();
-})
-.then(blob => {
-    const downloadUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = "video.mp4";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(downloadUrl);
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ url: urlInput })
+    })
+    .then(async response => {
+        console.log("Resposta recebida, status:", response.status);
+        
+        if (!response.ok) {
+            // Tenta pegar o erro detalhado do backend
+            try {
+                const errorData = await response.json();
+                console.error("Erro do backend (JSON):", errorData);
+                console.error("Mensagem de erro:", errorData.error || errorData.message || "Erro desconhecido");
+                throw new Error(errorData.error || errorData.message || `Erro ${response.status}: ${response.statusText}`);
+            } catch (e) {
+                // Se não conseguir extrair JSON, mostra o que conseguiu
+                console.error("Não foi possível extrair JSON do erro:", e);
+                const text = await response.text();
+                console.error("Conteúdo da resposta (texto):", text);
+                throw new Error(`Erro ${response.status}: ${response.statusText} - ${text.substring(0, 200)}`);
+            }
+        }
+        
+        return response.blob();
+    })
+    .then(blob => {
+        console.log("Blob recebido, tamanho:", blob.size, "bytes");
+        console.log("Tipo MIME:", blob.type);
+        
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "video.mp4";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(downloadUrl);
 
-    btn.innerHTML = "DOWNLOAD CONCLUÍDO!";
-    btn.style.background = "#00ff88";
-    btn.style.color = "#000";
-    btn.style.boxShadow = "0 0 20px rgba(0,255,136,0.8)";
-
-    setTimeout(() => {
-        btn.innerHTML = textoAntigo;
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.background = "var(--neon-blue)";
+        console.log("Download iniciado com sucesso!");
+        
+        btn.innerHTML = "DOWNLOAD CONCLUÍDO!";
+        btn.style.background = "#00ff88";
         btn.style.color = "#000";
-        btn.style.boxShadow = "0 0 15px rgba(0,243,255,0.5)";
-        velocidadeParticulas = 0.02;
-    }, 3000);
-})
-.catch(err => {
-    console.error(err);
+        btn.style.boxShadow = "0 0 20px rgba(0,255,136,0.8)";
 
-    btn.innerHTML = "ERRO NO DOWNLOAD";
-    btn.style.background = "#ff5555";
-    btn.style.color = "#fff";
-    btn.style.boxShadow = "0 0 20px rgba(255,85,85,0.8)";
+        setTimeout(() => {
+            btn.innerHTML = textoAntigo;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.background = "var(--neon-blue)";
+            btn.style.color = "#000";
+            btn.style.boxShadow = "0 0 15px rgba(0,243,255,0.5)";
+            velocidadeParticulas = 0.02;
+        }, 3000);
+    })
+    .catch(err => {
+        console.error("Erro completo no download:");
+        console.error("Mensagem:", err.message);
+        console.error("Stack:", err.stack);
+        console.error("Objeto erro completo:", err);
+        
+        btn.innerHTML = "ERRO NO DOWNLOAD";
+        btn.style.background = "#ff5555";
+        btn.style.color = "#fff";
+        btn.style.boxShadow = "0 0 20px rgba(255,85,85,0.8)";
 
-    setTimeout(() => {
-        btn.innerHTML = textoAntigo;
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.background = "var(--neon-blue)";
-        btn.style.color = "#000";
-        btn.style.boxShadow = "0 0 15px rgba(0,243,255,0.5)";
-        velocidadeParticulas = 0.02;
-    }, 3000);
-});
+        setTimeout(() => {
+            btn.innerHTML = textoAntigo;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.background = "var(--neon-blue)";
+            btn.style.color = "#000";
+            btn.style.boxShadow = "0 0 15px rgba(0,243,255,0.5)";
+            velocidadeParticulas = 0.02;
+        }, 3000);
+    });
+                                                                                                    
 }
+
 
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
