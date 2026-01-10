@@ -460,7 +460,7 @@ function iniciarDownload() {
 
     console.log("Iniciando download para URL:", urlInput);
 
-    fetch("https://clipgrabber-api.onrender.com/download", {
+    fetch("https://back_end/download", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
