@@ -114,6 +114,8 @@ python main.py
 3. Paste a YouTube URL
 4. Download the video
 
+Complete tutorial:https://github.com/gabrielrodriguesYT/ClipGrabber-API/
+
 ---
 
 ## ⚠️ Known limitations
